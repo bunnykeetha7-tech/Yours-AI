@@ -1,4 +1,8 @@
 const API = "http://127.0.0.1:8000";
+
+let currentConversation = null;
+let authToken = localStorage.getItem("yours_ai_token");
+let currentUser = null;
 let currentConversation = null;
 let authToken = localStorage.getItem("yours_ai_token");
 let currentUser = null;
