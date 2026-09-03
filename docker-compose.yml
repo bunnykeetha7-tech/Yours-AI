@@ -1,0 +1,55 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: yours_ai-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: yours_ai
+      MYSQL_USER: yours_ai
+      MYSQL_PASSWORD: yours_ai
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: yours_ai-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  backend:
+    build: ./backend
+    container_name: yours_ai-backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - ollama
+    environment:
+      DATABASE_URL: mysql+pymysql://yours_ai:yours_ai@mysql:3306/yours_ai?charset=utf8
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen3:4b
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+
+  frontend:
+    image: nginx:alpine
+    container_name: yours_ai-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
+volumes:
+  mysql_data:
+  ollama_data:
